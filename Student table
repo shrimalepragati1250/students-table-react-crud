@@ -1,0 +1,235 @@
+students-table-react-crud
+│
+├── index.html
+├── style.css
+├── app.js
+└── README.md
+
+Create index.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Students Table React</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+</head>
+
+<body>
+
+<h1>Students Management</h1>
+
+<div id="root"></div>
+
+<script type="text/babel" src="app.js"></script>
+
+</body>
+</html>
+
+Create style css
+body{
+font-family: Arial;
+padding:20px;
+background:#f4f4f4;
+}
+
+input{
+padding:8px;
+margin:5px;
+}
+
+button{
+padding:8px 10px;
+margin:5px;
+cursor:pointer;
+}
+
+table{
+border-collapse: collapse;
+margin-top:20px;
+width:80%;
+background:white;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:10px;
+text-align:center;
+}
+
+th{
+background:#eee;
+}
+Create app.js
+const { useState, useEffect } = React;
+
+function App(){
+
+const [students,setStudents] = useState([])
+const [name,setName] = useState("")
+const [email,setEmail] = useState("")
+const [age,setAge] = useState("")
+const [editIndex,setEditIndex] = useState(null)
+const [loading,setLoading] = useState(true)
+
+useEffect(()=>{
+setTimeout(()=>{
+setStudents([
+{name:"Rahul",email:"rahul@gmail.com",age:22},
+{name:"Priya",email:"priya@gmail.com",age:21}
+])
+setLoading(false)
+},1000)
+},[])
+
+const validateEmail=(email)=>{
+return /\S+@\S+\.\S+/.test(email)
+}
+
+const addStudent=()=>{
+
+if(!name || !email || !age){
+alert("All fields are required")
+return
+}
+
+if(!validateEmail(email)){
+alert("Invalid Email")
+return
+}
+
+const student = {name,email,age}
+
+if(editIndex !== null){
+
+const updated=[...students]
+updated[editIndex]=student
+setStudents(updated)
+setEditIndex(null)
+
+}else{
+
+setStudents([...students,student])
+
+}
+
+setName("")
+setEmail("")
+setAge("")
+
+}
+
+const editStudent=(index)=>{
+setName(students[index].name)
+setEmail(students[index].email)
+setAge(students[index].age)
+setEditIndex(index)
+}
+
+const deleteStudent=(index)=>{
+if(confirm("Are you sure you want to delete?")){
+setStudents(students.filter((s,i)=>i!==index))
+}
+}
+
+const downloadCSV=()=>{
+
+const rows=[
+["Name","Email","Age"],
+...students.map(s=>[s.name,s.email,s.age])
+]
+
+let csv="data:text/csv;charset=utf-8,"+
+rows.map(e=>e.join(",")).join("\n")
+
+const link=document.createElement("a")
+link.href=encodeURI(csv)
+link.download="students-data.csv"
+link.click()
+
+}
+
+if(loading) return <h3>Loading Students...</h3>
+
+return(
+
+<div>
+
+<h2>Add Student</h2>
+
+<input
+placeholder="Name"
+value={name}
+onChange={e=>setName(e.target.value)}
+/>
+
+<input
+placeholder="Email"
+value={email}
+onChange={e=>setEmail(e.target.value)}
+/>
+
+<input
+placeholder="Age"
+value={age}
+onChange={e=>setAge(e.target.value)}
+/>
+
+<button onClick={addStudent}>
+{editIndex!==null ? "Update Student":"Add Student"}
+</button>
+
+<button onClick={downloadCSV}>
+Download Excel
+</button>
+
+<h2>Students List</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Age</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{students.map((s,index)=>(
+<tr key={index}>
+<td>{s.name}</td>
+<td>{s.email}</td>
+<td>{s.age}</td>
+
+<td>
+
+<button onClick={()=>editStudent(index)}>
+Edit
+</button>
+
+<button onClick={()=>deleteStudent(index)}>
+Delete
+</button>
+
+</td>
+
+</tr>
+))}
+
+</tbody>
+
+</table>
+
+</div>
+
+)
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>)
